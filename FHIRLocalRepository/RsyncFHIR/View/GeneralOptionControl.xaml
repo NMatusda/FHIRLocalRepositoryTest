@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="RsyncFHIR.View.GeneralOptionControl"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:local="clr-namespace:RsyncFHIR.View"
+            mc:Ignorable="d"
+            d:DesignHeight="300" d:DesignWidth="350" Padding="5">
+    <GroupBox Header="全般　設定">
+        <StackPanel>
+            <GroupBox Header="基本設定">
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Grid.Column" Value="0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Grid.Column" Value="1"/>
+                                    <Setter Property="Orientation" Value="Horizontal"/>
+                                    <Setter Property="Margin" Value="3"/>
+                                    <Style.Resources>
+                                        <Style TargetType="RadioButton">
+                                            <Setter Property="Margin" Value="0, 0, 5, 0"/>
+                                        </Style>
+                                    </Style.Resources>
+                                </Style>
+                                <Style TargetType="Grid">
+                                    <Setter Property="Margin" Value="3"/>
+                                </Style>
+                            </Style.Resources>
+                        </Style>
+                    </Grid.Style>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0">常に最前面に表示する</TextBlock>
+                    <StackPanel Grid.Row="0">
+                        <CheckBox IsChecked="{Binding Path=TopMost}" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="1">アプリ起動時に連携を開始する</TextBlock>
+                    <StackPanel Grid.Row="1">
+                        <CheckBox IsChecked="{Binding Path=DoInitExec}" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="2">ログ保存日数</TextBlock>
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=LogDays}" />
+                    <TextBlock Grid.Row="2" Grid.Column="2">日</TextBlock>
+                    <TextBlock Grid.Row="3">ディレクトリ分割数</TextBlock>
+                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Path=SeparateDir}" />
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+    </GroupBox>
+</UserControl>

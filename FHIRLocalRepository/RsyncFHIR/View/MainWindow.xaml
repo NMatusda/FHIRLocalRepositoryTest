@@ -1,0 +1,117 @@
+﻿<Window x:Class="RsyncFHIR.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RsyncFHIR.View"
+        xmlns:rbc="clr-namespace:RsyncFHIR.Control"
+        xmlns:ViewModel="clr-namespace:RsyncFHIR.ViewModel"
+        mc:Ignorable="d"
+        Title="RSYNC FHIR" Height="450" Width="800">
+    <Window.Resources>
+        <Style x:Key="DefaultCellStyle" TargetType="DataGridCell">
+            <Style.Triggers>
+                <Trigger Property="DataGridCell.IsSelected" Value="True">
+                    <Setter Property="Background" Value="AliceBlue" />
+                    <Setter Property="Foreground" Value="Black" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <DockPanel>
+        <Ribbon DockPanel.Dock="Top" ShowQuickAccessToolBarOnTop="False" Loaded="Ribbon_Loaded">
+            <Ribbon.ApplicationMenu>
+                <RibbonApplicationMenu Label="ファイル" SmallImageSource="/RSyncFHIR;component/Images/document.png">
+                    <RibbonApplicationMenuItem Header="RSYNC FHIRについて" Command="{Binding Path=AboutBoxCommand}" ImageSource="/RSyncFHIR;component/Images/info.png" CanAddToQuickAccessToolBarDirectly="False"/>
+                    <RibbonApplicationMenuItem Header="オプション" Command="{Binding Path=SettingCommand}" ImageSource="/RSyncFHIR;component/Images/settings.png" CanAddToQuickAccessToolBarDirectly="False"/>
+                    <RibbonApplicationMenuItem Header="終了" ImageSource="/RSyncFHIR;component/Images/close.png" Click="Close" />
+                </RibbonApplicationMenu>
+            </Ribbon.ApplicationMenu>
+            <RibbonTab Header="ホーム" Selector.IsSelected="True">
+                <RibbonGroup Header="" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <RibbonMenuButton Label="RSYNC FHIR">
+                        <RibbonMenuButton.Style>
+                            <Style TargetType="{x:Type RibbonMenuButton}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsRsyncFHIR}" Value="True">
+                                        <Setter Property="LargeImageSource" Value="/RSyncFHIR;component/Images/Stop.png" />
+                                        <Setter Property="SmallImageSource" Value="/RSyncFHIR;component/Images/Stop.png" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=IsRsyncFHIR}" Value="False">
+                                        <Setter Property="LargeImageSource" Value="/RSyncFHIR;component/Images/Start.png" />
+                                        <Setter Property="SmallImageSource" Value="/RSyncFHIR;component/Images/Start.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </RibbonMenuButton.Style>
+                        <RibbonMenuItem Header="RSYNC FHIRを開始する" Command="{Binding Path=RSyncStartCommand}">
+                            <RibbonMenuItem.Style>
+                                <Style TargetType="RibbonMenuItem">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsRsyncFHIR}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=IsRsyncFHIR}" Value="False">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RibbonMenuItem.Style>
+                        </RibbonMenuItem>
+                        <RibbonMenuItem Header="RSYNC FHIRを停止する" Command="{Binding Path=RSyncStopCommand}">
+                            <RibbonMenuItem.Style>
+                                <Style TargetType="RibbonMenuItem">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsRsyncFHIR}" Value="True">
+                                            <Setter Property="IsEnabled" Value="True" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=IsRsyncFHIR}" Value="False">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RibbonMenuItem.Style>
+                        </RibbonMenuItem>
+                    </RibbonMenuButton>
+                    <Label Width="70" Height="70" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{Binding JsonFileCount}"/>
+                </RibbonGroup>
+                <RibbonGroup Header="設定" LargeImageSource="/RSyncFHIR;component/Images/settings.png">
+                    <RibbonButton LargeImageSource="/RSyncFHIR;component/Images/settings.png" Label="オプション" Command="{Binding Path=SettingCommand}" SmallImageSource="/RSyncFHIR;component/Images/settings.png" />
+                </RibbonGroup>
+            </RibbonTab>
+        </Ribbon>
+        <DataGrid ItemsSource="{Binding Path=MessageList}" AutoGenerateColumns="False" HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" HeadersVisibility="Column" IsReadOnly="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Style.Setters>
+                        <Setter Property="ContextMenu">
+                            <Setter.Value>
+                                <ContextMenu>
+                                    <MenuItem Header="No" IsCheckable="False"/>
+                                    <MenuItem Header="種別" IsCheckable="False"/>
+                                    <MenuItem Header="結果" IsCheckable="False"/>
+                                    <MenuItem Header="処理時間" IsCheckable="False"/>
+                                    <MenuItem Header="内容" IsCheckable="False"/>
+                                </ContextMenu>
+                            </Setter.Value>
+                        </Setter>
+                    </Style.Setters>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="CoopNoColumn" Binding="{Binding Path=No}" Header="No" Width="30" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
+                <DataGridTextColumn x:Name="CoopSyubetsuColumn" Binding="{Binding Path=Syubetsu}" Header="種別" Width="90" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
+                <DataGridTextColumn x:Name="CoopResultColumn" Binding="{Binding Path=Result}" Header="結果" Width="40" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
+                <DataGridTextColumn x:Name="CoopPastTimeColumn" Binding="{Binding Path=PastTime}" Header="処理時間" Width="80" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
+                <DataGridTextColumn x:Name="CoopCommentColumn" Binding="{Binding Path=Comment}" Header="内容" Width="*" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>
