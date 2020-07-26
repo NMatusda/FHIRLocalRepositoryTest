@@ -18,7 +18,7 @@ namespace RsyncFHIR
     public partial class App : Application
     {
         private string _appName = new FileInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).Name;
-        private System.Threading.Mutex _mutex = null;
+        private System.Threading.Mutex? _mutex = null;
 
         protected override void OnStartup(StartupEventArgs e)
         {

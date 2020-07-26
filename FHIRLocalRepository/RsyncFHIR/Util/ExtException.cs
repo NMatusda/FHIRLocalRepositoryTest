@@ -8,7 +8,7 @@ namespace RsyncFHIR.Util
     [Serializable()]
     public class RebootException : System.Exception
     {
-        public Exception BaseException { get; set; }
+        public Exception? BaseException { get; set; }
         public RebootException() : base() { BaseException = null; }
         public RebootException(Exception ex) : base()
         {

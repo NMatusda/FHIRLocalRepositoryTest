@@ -4,8 +4,11 @@ using RsyncFHIR.Util;
 using RsyncFHIR.View;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace RsyncFHIR.ViewModel
@@ -20,39 +23,62 @@ namespace RsyncFHIR.ViewModel
             set { this._config = value; }
         }
 
-        private SettingCommand _settingCommand;
+        private SettingCommand? _settingCommand;
+        /// <summary>
+        /// オプションコマンド
+        /// </summary>
         public SettingCommand SettingCommand
         {
             get
             {
-                if (_settingCommand == null) _settingCommand = new SettingCommand(this);
-                return _settingCommand;
+                if (this._settingCommand == null) this._settingCommand = new SettingCommand(this);
+                return this._settingCommand;
             }
         }
 
-        public ICommand AboutBoxCommand { get; set; }
+        private AboutCommand? _abooutCommand;
+        /// <summary>
+        /// RSYNC FHIRについてコマンド
+        /// </summary>
+        public AboutCommand AboutBoxCommand
+        {
+            get
+            {
+                if (this._abooutCommand == null) this._abooutCommand = new AboutCommand(this);
+                return this._abooutCommand;
+            }
+        }
 
-        private RSyncStartCommand _rSyncStartCommand;
+        private RSyncStartCommand? _rSyncStartCommand;
+        /// <summary>
+        /// 開始コマンド
+        /// </summary>
         public RSyncStartCommand RSyncStartCommand
         {
             get
             {
-                if (_rSyncStartCommand == null) _rSyncStartCommand = new RSyncStartCommand(this);
-                return _rSyncStartCommand;
+                if (this._rSyncStartCommand == null) this._rSyncStartCommand = new RSyncStartCommand(this);
+                return this._rSyncStartCommand;
             }
         }
 
-        private RSyncStopCommand _SyncStopCommand;
+        private RSyncStopCommand? _SyncStopCommand;
+        /// <summary>
+        /// 停止コマンド
+        /// </summary>
         public RSyncStopCommand RSyncStopCommand
         {
             get
             {
-                if (_SyncStopCommand == null) _SyncStopCommand = new RSyncStopCommand(this);
-                return _SyncStopCommand;
+                if (this._SyncStopCommand == null) this._SyncStopCommand = new RSyncStopCommand(this);
+                return this._SyncStopCommand;
             }
         }
 
         private bool _isRsyncFHIR;
+        /// <summary>
+        /// 連携中フラグ
+        /// </summary>
         public bool IsRsyncFHIR
         {
             get { return this._isRsyncFHIR; }
@@ -64,6 +90,9 @@ namespace RsyncFHIR.ViewModel
         }
 
         private int _jsonFileCount;
+        /// <summary>
+        /// 残ファイル処理件数
+        /// </summary>
         public int JsonFileCount
         {
             get { return this._jsonFileCount; }
@@ -74,7 +103,10 @@ namespace RsyncFHIR.ViewModel
             }
         }
 
-        private FileSystemWatcher _watcher;
+        private FileSystemWatcher _watcher = new FileSystemWatcher();
+        /// <summary>
+        /// FileSystemWatcher
+        /// </summary>
         public FileSystemWatcher Watcher
         {
             get { return this._watcher; }
@@ -85,16 +117,7 @@ namespace RsyncFHIR.ViewModel
             }
         }
 
-        private List<FileSystemWatcher> _subWatcher;
-        public List<FileSystemWatcher> SubWatcher
-        {
-            get { return this._subWatcher; }
-            set
-            {
-                this._subWatcher = value;
-                base.OnPropertyChanged("SubWatcher");
-            }
-        }
+        public ObservableCollection<MessageItem> MessageItems { get; } = new ObservableCollection<MessageItem>();
 
         public void Initalize()
         {
@@ -109,70 +132,60 @@ namespace RsyncFHIR.ViewModel
         {
             this._config = Config.GetConfig();
             IsRsyncFHIR = false;
+            BindingOperations.EnableCollectionSynchronization(this.MessageItems, new object());
 
-            var rsm = new RSyncModel();
-            rsm.CreateSubDirectory($"C:\\SynchronizeDirectory", Config.SeparateDir);
-
-            Watcher = CreateWatcher($"C:\\SynchronizeDirectory");
-
-            SubWatcher = CreateSubWatcher($"C:\\SynchronizeDirectory");
-
-            this.AboutBoxCommand = new RelayCommand(p => this.ShowAbout());
+            Watcher = CreateWatcher(this.Config.SyncDir);
         }
 
+        /// <summary>
+        /// ルートディレクトリのFileSystemWatcherを生成する
+        /// </summary>
+        /// <param name="watchPath">ルートディレクトリのパス</param>
+        /// <returns></returns>
         private FileSystemWatcher CreateWatcher(string watchPath)
         {
             var rsmodel = new RSyncModel();
-            FileSystemEventHandler createdHandler = null;
-            RenamedEventHandler renamedHandler = null;
-            createdHandler = async (s, e) => await rsmodel.MoveDirectoryAsync(watchPath, e.Name);
-            renamedHandler = async (s, e) => await rsmodel.MoveDirectoryAsync(watchPath, e.Name);
+            rsmodel.OnNewMessage += AddMessageItems;
+
+            FileSystemEventHandler? createdHandler = null;
+            RenamedEventHandler? renamedHandler = null;
+            createdHandler = async (s, e) => await rsmodel.MainProcAsync(watchPath, e.Name);
+            renamedHandler = async (s, e) => await rsmodel.MainProcAsync(watchPath, e.Name);
 
             var watcher = new FileSystemWatcher(watchPath)
             {
-                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.LastAccess
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.LastAccess | NotifyFilters.CreationTime,
             };
             watcher.Created += createdHandler;
+            watcher.Changed += createdHandler;
             watcher.Renamed += renamedHandler;
 
             return watcher;
         }
 
-        private List<FileSystemWatcher> CreateSubWatcher(string watchPath)
+        /// <summary>
+        /// MessageItemsへの追加
+        /// </summary>
+        /// <param name="addMessage"></param>
+        public void AddMessageItems(MessageItem addMessage)
         {
-            var fswlist = new List<FileSystemWatcher>();
-            foreach (var subdir in Directory.GetDirectories(watchPath))
-            {
-                var rsmodel = new RSyncSubModel();
-                FileSystemEventHandler createdHandler = null;
-                RenamedEventHandler renamedHandler = null;
-                createdHandler = async (s, e) => await rsmodel.TestProcAsync(subdir, e.Name);
-                renamedHandler = async (s, e) => await rsmodel.TestProcAsync(subdir, e.Name);
+            var itemcount = this.MessageItems.Count > 0 ? this.MessageItems.First().No + 1 : 1;
+            if (itemcount > 100) itemcount--;
 
-                var watcher = new FileSystemWatcher(subdir)
-                {
-                    NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.LastAccess
-                };
-                watcher.Created += createdHandler;
-                watcher.Renamed += renamedHandler;
-
-                fswlist.Add(watcher);
-            }
-
-            return fswlist;
-        }
-
-        private void ShowAbout()
-        {
+            addMessage.No = itemcount;
+            this.MessageItems.Insert(0, addMessage);
         }
     }
 
+    /// <summary>
+    /// オプションコマンド
+    /// </summary>
     public class SettingCommand : CommandBase
     {
         private MainWindowViewModel _vm;
         public SettingCommand(MainWindowViewModel vm) : base()
         {
-            _vm = vm;
+            this._vm = vm;
         }
 
         public override bool CanExecuteCore(object parameter) => !_vm.IsRsyncFHIR;
@@ -191,29 +204,60 @@ namespace RsyncFHIR.ViewModel
         }
     }
 
+    /// <summary>
+    /// RSYNC FHIRについてコマンド
+    /// </summary>
+    public class AboutCommand : CommandBase
+    {
+        private MainWindowViewModel _vm;
+        public AboutCommand(MainWindowViewModel vm) : base()
+        {
+            this._vm = vm;
+        }
+
+        public override bool CanExecuteCore(object parameter) => true;
+
+        public override void ExecuteCoreAsync(object parameter)
+        {
+            var about = new AboutWindow();
+            var viewmodel = new AboutWindowViewModel();
+
+            about.DataContext = viewmodel;
+            about.ShowDialog();
+        }
+    }
+
+    /// <summary>
+    /// 開始コマンド
+    /// </summary>
     public class RSyncStartCommand : CommandBase
     {
         private MainWindowViewModel _vm;
 
         public RSyncStartCommand(MainWindowViewModel vm) : base() => _vm = vm;
 
-        public override bool CanExecuteCore(object parameter) => !_vm.IsRsyncFHIR;
+        public override bool CanExecuteCore(object parameter) => _vm != null && !_vm.IsRsyncFHIR;
 
-        public override async void ExecuteCoreAsync(object parameter)
+        public override void ExecuteCoreAsync(object parameter)
         {
+            if (_vm == null) return;
             _vm.IsRsyncFHIR = true;
-            // watcherを起動
-            foreach (var subw in _vm.SubWatcher)
-            {
-                subw.EnableRaisingEvents = true;
-            }
-            // 蓄積している分を処理
-            var rs = new RSyncModel();
-            await rs.MoveDirectoryAsync($"C:\\SynchronizeDirectory");
+
+            // Watcherを起動
             _vm.Watcher.EnableRaisingEvents = true;
+            _vm.AddMessageItems(new MessageItem()
+            {
+                No = _vm.MessageItems.Count + 1,
+                PastTime = DateTime.Now,
+                Comment = $"連携処理を開始しました。",
+                Result = true,
+            });
         }
     }
 
+    /// <summary>
+    /// 停止コマンド
+    /// </summary>
     public class RSyncStopCommand : CommandBase
     {
         private MainWindowViewModel _vm;
@@ -225,11 +269,8 @@ namespace RsyncFHIR.ViewModel
         public override void ExecuteCoreAsync(object parameter)
         {
             _vm.IsRsyncFHIR = false;
+            // ルートディレクトリのwatcherを停止
             _vm.Watcher.EnableRaisingEvents = false;
-            foreach (var subw in _vm.SubWatcher)
-            {
-                subw.EnableRaisingEvents = false;
-            }
         }
     }
 }

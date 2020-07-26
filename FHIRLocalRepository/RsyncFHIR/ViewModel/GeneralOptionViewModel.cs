@@ -54,13 +54,13 @@ namespace RsyncFHIR.ViewModel
             }
         }
 
-        public int SeparateDir
+        public string SyncDir
         {
-            get { return this._config.SeparateDir; }
+            get { return this._config.SyncDir; }
             set
             {
-                this._config.SeparateDir = value;
-                base.OnPropertyChanged("SeparateDir");
+                this._config.SyncDir = value;
+                base.OnPropertyChanged("SyncDir");
             }
         }
     }

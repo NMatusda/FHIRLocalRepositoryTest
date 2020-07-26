@@ -15,13 +15,13 @@ namespace RsyncFHIR.ViewModel
 
         private Config _config;
 
-        public event Action OnClose;
+        public event Action? OnClose;
 
         private OptionBaseViewModel _generalOption;
         private OptionBaseViewModel _connectOption;
 
-        private OptionBaseViewModel _optionWindow;
-        public OptionBaseViewModel OptionWindow
+        private OptionBaseViewModel? _optionWindow;
+        public OptionBaseViewModel? OptionWindow
         {
             get { return _optionWindow; }
             set
@@ -34,7 +34,6 @@ namespace RsyncFHIR.ViewModel
         {
             this._config = Config.GetConfig();
 
-            // App.xamlに記載しているResourceDictionaryにて指定した、Resource > OptionWindow.xaml ファイルの更新が必要なので注意
             this._generalOption = new GeneralOptionViewModel();
             this._connectOption = new ConnectOptionViewModel();
 

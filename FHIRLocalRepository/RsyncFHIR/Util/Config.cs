@@ -7,7 +7,7 @@ namespace RsyncFHIR.Util
 {
     public sealed class Config
     {
-        private static Config _config;
+        private static Config? _config;
         private IDictionary<string, string> _configDictionary;
 
         private Config()
@@ -103,21 +103,18 @@ namespace RsyncFHIR.Util
             }
         }
 
-        private const string CONS_SEPARATEDIR = "SeparateDir";
-        public int SeparateDir
+        private const string CONS_SYNCDIR = "SyncDir";
+        public string SyncDir
         {
             get
             {
-                int val;
-                if (this._configDictionary.ContainsKey(CONS_SEPARATEDIR) && int.TryParse(this._configDictionary[CONS_SEPARATEDIR], out val))
-                {
-                    return val;
-                }
-                return 30;
+                if (!this._configDictionary.ContainsKey(CONS_SYNCDIR)) return string.Empty;
+                return this._configDictionary[CONS_SYNCDIR];
             }
             set
             {
-                this._configDictionary[CONS_SEPARATEDIR] = value.ToString();
+                if (string.IsNullOrWhiteSpace(value)) this._configDictionary[CONS_SYNCDIR] = string.Empty;
+                this._configDictionary[CONS_SYNCDIR] = value;
             }
         }
 
@@ -163,6 +160,51 @@ namespace RsyncFHIR.Util
             {
                 if (string.IsNullOrWhiteSpace(value)) this._configDictionary[CONS_DBPASSWORD] = string.Empty;
                 this._configDictionary[CONS_DBPASSWORD] = value;
+            }
+        }
+
+        private const string CONS_MONGOCONNECTIONSTRING = "MongoConnectionString";
+        public string MongoConnectionString
+        {
+            get
+            {
+                if (!this._configDictionary.ContainsKey(CONS_MONGOCONNECTIONSTRING)) return string.Empty;
+                return this._configDictionary[CONS_MONGOCONNECTIONSTRING];
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) this._configDictionary[CONS_MONGOCONNECTIONSTRING] = string.Empty;
+                this._configDictionary[CONS_MONGOCONNECTIONSTRING] = value;
+            }
+        }
+
+        private const string CONS_MONGODBNAME = "MongoDBName";
+        public string MongoDBName
+        {
+            get
+            {
+                if (!this._configDictionary.ContainsKey(CONS_MONGODBNAME)) return string.Empty;
+                return this._configDictionary[CONS_MONGODBNAME];
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) this._configDictionary[CONS_MONGODBNAME] = string.Empty;
+                this._configDictionary[CONS_MONGODBNAME] = value;
+            }
+        }
+        
+        private const string CONS_MONGOCOLLECTIONNAME = "MongoCollectionName";
+        public string MongoCollectionName
+        {
+            get
+            {
+                if (!this._configDictionary.ContainsKey(CONS_MONGOCOLLECTIONNAME)) return string.Empty;
+                return this._configDictionary[CONS_MONGOCOLLECTIONNAME];
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) this._configDictionary[CONS_MONGOCOLLECTIONNAME] = string.Empty;
+                this._configDictionary[CONS_MONGOCOLLECTIONNAME] = value;
             }
         }
     }

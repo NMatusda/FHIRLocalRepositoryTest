@@ -39,7 +39,7 @@ namespace LocalFHIRRepository.Model
         {
             try
             {
-                using (var sw = new StreamWriter($"{Startup.GetSettings("SynchronizeDirectory")}\\{value.SynchronizeFileName()}", false, System.Text.Encoding.UTF8))
+                using (var sw = new StreamWriter($"{Startup.GetSettings("SynchronizeDirectory")}\\{value.SynchronizeFileName()}", false, System.Text.Encoding.Unicode))
                 {
                     sw.Write(value.OutputJson());
                 }

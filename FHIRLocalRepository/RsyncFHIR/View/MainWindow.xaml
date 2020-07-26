@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:RsyncFHIR.View"
         xmlns:rbc="clr-namespace:RsyncFHIR.Control"
         xmlns:ViewModel="clr-namespace:RsyncFHIR.ViewModel"
+        xmlns:cv="clr-namespace:RsyncFHIR.Converter"
         mc:Ignorable="d"
         Title="RSYNC FHIR" Height="450" Width="800">
     <Window.Resources>
@@ -18,6 +19,8 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <cv:DatetimeToStringConverter x:Key="datetimeStringConverter" />
+        <cv:BoolToStringConverter x:Key="boolStringConverter" />
     </Window.Resources>
     <DockPanel>
         <Ribbon DockPanel.Dock="Top" ShowQuickAccessToolBarOnTop="False" Loaded="Ribbon_Loaded">
@@ -81,7 +84,7 @@
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>
-        <DataGrid ItemsSource="{Binding Path=MessageList}" AutoGenerateColumns="False" HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" HeadersVisibility="Column" IsReadOnly="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+        <DataGrid ItemsSource="{Binding Path=MessageItems}" AutoGenerateColumns="False" HorizontalGridLinesBrush="LightGray" VerticalGridLinesBrush="LightGray" HeadersVisibility="Column" IsReadOnly="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
                     <Style.Setters>
@@ -89,7 +92,7 @@
                             <Setter.Value>
                                 <ContextMenu>
                                     <MenuItem Header="No" IsCheckable="False"/>
-                                    <MenuItem Header="種別" IsCheckable="False"/>
+                                    <MenuItem Header="サブDir" IsCheckable="False"/>
                                     <MenuItem Header="結果" IsCheckable="False"/>
                                     <MenuItem Header="処理時間" IsCheckable="False"/>
                                     <MenuItem Header="内容" IsCheckable="False"/>
@@ -101,9 +104,9 @@
             </DataGrid.ColumnHeaderStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn x:Name="CoopNoColumn" Binding="{Binding Path=No}" Header="No" Width="30" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
-                <DataGridTextColumn x:Name="CoopSyubetsuColumn" Binding="{Binding Path=Syubetsu}" Header="種別" Width="90" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
-                <DataGridTextColumn x:Name="CoopResultColumn" Binding="{Binding Path=Result}" Header="結果" Width="40" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
-                <DataGridTextColumn x:Name="CoopPastTimeColumn" Binding="{Binding Path=PastTime}" Header="処理時間" Width="80" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
+                <DataGridTextColumn x:Name="CoopSyubetsuColumn" Binding="{Binding Path=SubDir}" Header="サブDir" Width="50" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
+                <DataGridTextColumn x:Name="CoopResultColumn" Binding="{Binding Path=Result, Converter={StaticResource ResourceKey=boolStringConverter}}" Header="結果" Width="40" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
+                <DataGridTextColumn x:Name="CoopPastTimeColumn" Binding="{Binding Path=PastTime, Converter={StaticResource ResourceKey=datetimeStringConverter}}" Header="処理時間" Width="80" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False"/>
                 <DataGridTextColumn x:Name="CoopCommentColumn" Binding="{Binding Path=Comment}" Header="内容" Width="*" CellStyle="{StaticResource ResourceKey=DefaultCellStyle}" CanUserSort="False">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">

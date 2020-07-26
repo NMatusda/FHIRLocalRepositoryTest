@@ -34,7 +34,8 @@
                         </Style>
                     </Grid.Style>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="40"/>
                         <ColumnDefinition Width="40"/>
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
@@ -45,18 +46,18 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0">常に最前面に表示する</TextBlock>
-                    <StackPanel Grid.Row="0">
+                    <StackPanel Grid.Row="0" Grid.Column="2">
                         <CheckBox IsChecked="{Binding Path=TopMost}" />
                     </StackPanel>
                     <TextBlock Grid.Row="1">アプリ起動時に連携を開始する</TextBlock>
-                    <StackPanel Grid.Row="1">
+                    <StackPanel Grid.Row="1" Grid.Column="2">
                         <CheckBox IsChecked="{Binding Path=DoInitExec}" />
                     </StackPanel>
                     <TextBlock Grid.Row="2">ログ保存日数</TextBlock>
                     <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Path=LogDays}" />
                     <TextBlock Grid.Row="2" Grid.Column="2">日</TextBlock>
-                    <TextBlock Grid.Row="3">ディレクトリ分割数</TextBlock>
-                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Path=SeparateDir}" />
+                    <TextBlock Grid.Row="3">連携フォルダパス</TextBlock>
+                    <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Path=SyncDir}" />
                 </Grid>
             </GroupBox>
         </StackPanel>

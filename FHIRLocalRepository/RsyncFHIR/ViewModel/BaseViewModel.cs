@@ -9,7 +9,7 @@ namespace RsyncFHIR.ViewModel
 {
     public abstract class BaseViewModel : INotifyPropertyChanged, IDisposable
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public void Dispose()
         {
